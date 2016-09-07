@@ -1,0 +1,1 @@
+*/10 * * * * /home/ivo/work/dailyinfocrawler/check_new_rooms.sh > /dev/null 2>&1 || true

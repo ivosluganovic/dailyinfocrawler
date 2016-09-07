@@ -6,6 +6,11 @@
 ### In setting it, I followed online instructions (along the lines of: http://rianjs.net/2013/08/send-email-from-linux-server-using-gmail-and-ubuntu-two-factor-authentication), with the caveat of setting hostname=localhost to make it work with gmail.
 
 
+## TODO: This should be done smarter, to work for other people
+cd ~/work/dailyinfocrawler
+
+# So that I know when was the script run last time
+touch last_cron_job.txt
 
 
 # Download current state
