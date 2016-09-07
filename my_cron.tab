@@ -1,1 +1,2 @@
 */10 * * * * /home/ivo/work/dailyinfocrawler/rooms/check_new_rooms.sh > /dev/null 2>&1 || true
+*/10 * * * * /home/ivo/work/dailyinfocrawler/homes/check_new_homes.sh > /dev/null 2>&1 || true
