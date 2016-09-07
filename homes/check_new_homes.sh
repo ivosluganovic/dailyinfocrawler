@@ -7,17 +7,17 @@
 
 
 ## TODO: This should be done smarter, to work for other people
-cd ~/work/dailyinfocrawler
+cd ~/work/dailyinfocrawler/homes
 
 # So that I know when was the script run last time
 touch last_cron_job.txt
 
 
 # Download current state
-curl http://www.dailyinfo.co.uk/rooms-to-let > current_state_raw.txt
+curl http://www.dailyinfo.co.uk/homes-to-let > current_state_raw.txt
 
 # Make file pretty and indented
-tidy -config tidy.conf current_state_raw.txt  > current_state_clean.txt
+tidy -config ../tidy.conf current_state_raw.txt  > current_state_clean.txt
 
 # Remove unnecessary data before the first listing
 PATTERN='ul id="pl" '
@@ -62,7 +62,7 @@ cat diff_state.txt
 # If there is a diff, send email
 if [ -s diff_state.txt ]
 then
-    cat diff_state.txt | mail -s "[DI] New Rooms" ivo.sluganovic@gmail.com
+    cat diff_state.txt | mail -s "[DI] New Homes" ivo.sluganovic@gmail.com
     echo "Email notification sent!"
 fi
 
