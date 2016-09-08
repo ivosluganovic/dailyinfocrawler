@@ -15,13 +15,15 @@ touch last_cron_job.txt
 # Download current state
 curl http://www.dailyinfo.co.uk/homes-to-let > current_state_raw.txt
 
-# Remove all scripts and such
-cat current_state_raw.txt  | grep -v -E '(script|function|\(\)|CDATA)' > tmp.txt; cp tmp.txt current_state_raw.txt
+# Extract only room links
+egrep -o 'to\-let/[0-9]{7}' current_state_raw.txt > current_state.txt
 
-# Make file pretty and indented
-tidy -config ../tidy.conf current_state_raw.txt  > current_state_clean.txt
+# Make them proper, links
+sed -i -e 's|^|http://www.dailyinfo.co.uk/homes-|' current_state.txt
 
-cp current_state_clean.txt current_state.txt
+# Make them sorted and unique
+sort -u current_state.txt > tmp.txt; cp tmp.txt current_state.txt
+
 
 # In case previous state is empty, just make it the same to current state to silenlty swallow starting conditions when nothing has yet been pulled.
 if ! [ -f previous_state.txt ]
@@ -32,22 +34,11 @@ fi
 # Compare the previous and current version
 diff -w current_state.txt previous_state.txt > diff_state.txt
 
-
 # Only show lines ADDED in current state, not those that are missing
 cat diff_state.txt | grep -E "^<" > tmp.txt; cp tmp.txt diff_state.txt
 
-# Extract only home links
-egrep -o 'to\-let/[0-9]{7}' diff_state.txt > tmp.txt; cp tmp.txt diff_state.txt
-
-# Make them proper links
-sed -i -e 's|^|http://www.dailyinfo.co.uk/homes-|' diff_state.txt
-
-
 # Print out for debugging
 cat diff_state.txt
-
-# Make links unique and sorted
-sort -u diff_state.txt > tmp.txt; cp tmp.txt diff_state.txt
 
 
 # If there is a diff, send email
