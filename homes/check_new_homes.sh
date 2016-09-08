@@ -12,24 +12,16 @@ cd ~/work/dailyinfocrawler/homes
 # So that I know when was the script run last time
 touch last_cron_job.txt
 
-
 # Download current state
 curl http://www.dailyinfo.co.uk/homes-to-let > current_state_raw.txt
+
+# Remove all scripts and such
+cat current_state_raw.txt  | grep -v -E '(script|function|\(\)|CDATA)' > tmp.txt; cp tmp.txt current_state_raw.txt
 
 # Make file pretty and indented
 tidy -config ../tidy.conf current_state_raw.txt  > current_state_clean.txt
 
-# Remove unnecessary data before the first listing
-PATTERN='ul id="pl" '
-sed "0,/$PATTERN/d" < current_state_clean.txt > current_state_shorter.txt
-
-# Remove two lines that do change every time
-cp current_state_shorter.txt current_state.txt
-sed '/www.facebook.com/d' current_state.txt > tmp.txt; cp tmp.txt current_state.txt
-sed '/NREUM/d' current_state.txt > tmp.txt; cp tmp.txt current_state.txt
-sed '/queue.script(/d' current_state.txt > tmp.txt; cp tmp.txt current_state.txt
-sed '/<b>Enter the text of your add here:/d' current_state.txt > tmp.txt; cp tmp.txt current_state.txt
-
+cp current_state_clean.txt current_state.txt
 
 # In case previous state is empty, just make it the same to current state to silenlty swallow starting conditions when nothing has yet been pulled.
 if ! [ -f previous_state.txt ]
@@ -37,26 +29,25 @@ then
     cp current_state.txt previous_state.txt
 fi
 
-
-
 # Compare the previous and current version
 diff -w current_state.txt previous_state.txt > diff_state.txt
+
 
 # Only show lines ADDED in current state, not those that are missing
 cat diff_state.txt | grep -E "^<" > tmp.txt; cp tmp.txt diff_state.txt
 
-# Make links open the base property site, not send page
-sed -i 's/mask_email_send.php?ad_id/property.php?id/g' diff_state.txt
+# Extract only home links
+egrep -o 'to\-let/[0-9]{7}' diff_state.txt > tmp.txt; cp tmp.txt diff_state.txt
 
-# Add space before main text
-sed -i 's/<span class="a_text">/<span class="a_text">\n----------------\n/g' diff_state.txt
-
-# Emphasize GBP signs
-sed -i 's/&#163/\n _____GBP: /g' diff_state.txt
+# Make them proper links
+sed -i -e 's|^|http://www.dailyinfo.co.uk/homes-|' diff_state.txt
 
 
 # Print out for debugging
 cat diff_state.txt
+
+# Make links unique and sorted
+sort -u diff_state.txt > tmp.txt; cp tmp.txt diff_state.txt
 
 
 # If there is a diff, send email
